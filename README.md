@@ -67,7 +67,7 @@ Expect HTTP `202` and a JSON body with `ok`, `id`, and `receivedAt`.
 | `npm run format`       | Prettier write                          |
 | `npm run format:check` | Prettier check (`--check`)              |
 
-Quality gates (**lint**, **test**, **build**) should all pass locally before opening a PR; CI automation is wired in Session 5 of [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md).
+
 
 ### Source maps in production
 
