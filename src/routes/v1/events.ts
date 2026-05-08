@@ -48,6 +48,8 @@ eventsRoute.post('/', async (c) => {
     return c.json(body, 400)
   }
 
+  // TODO: Implement event processing
+
   const envelope = buildAcceptedEnvelope()
   const body: EventsSuccessBody = {
     ok: true,
