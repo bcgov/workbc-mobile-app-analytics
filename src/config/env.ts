@@ -15,7 +15,9 @@ function parsePort(raw: string | undefined): number {
   }
   const n = Number(raw)
   if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1 || n > 65535) {
-    throw new Error(`PORT must be an integer from 1 to 65535, received: ${JSON.stringify(raw)}`)
+    throw new Error(
+      `PORT must be an integer from 1 to 65535, received: ${JSON.stringify(raw)}`,
+    )
   }
   return n
 }
@@ -28,7 +30,9 @@ const optionalEnvSchema = z.object({
 export function loadEnv(): AppEnv {
   const parsed = optionalEnvSchema.safeParse(process.env)
   if (!parsed.success) {
-    const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
+    const issues = parsed.error.issues
+      .map((i) => `${i.path.join('.')}: ${i.message}`)
+      .join('; ')
     console.error(
       JSON.stringify({
         ts: new Date().toISOString(),

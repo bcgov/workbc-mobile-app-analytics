@@ -1,10 +1,14 @@
+import { randomUUID } from 'node:crypto'
 import type { MiddlewareHandler } from 'hono'
 import type { AppEnv } from '../config/env.js'
 import type { Logger } from '../lib/logger.js'
 
-export function requestLogMiddleware(log: Logger, env: AppEnv): MiddlewareHandler {
+export function requestLogMiddleware(
+  log: Logger,
+  env: AppEnv,
+): MiddlewareHandler {
   return async (c, next) => {
-    const requestId = c.req.header('x-request-id') ?? crypto.randomUUID()
+    const requestId = c.req.header('x-request-id') ?? randomUUID()
     const start = performance.now()
     await next()
     const durationMs = Math.round(performance.now() - start)

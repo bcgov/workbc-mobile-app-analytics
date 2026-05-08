@@ -1,5 +1,9 @@
+import { randomUUID } from 'node:crypto'
 import { Hono } from 'hono'
-import type { EventsErrorBody, EventsSuccessBody, ParsedEventPayload } from '../../schemas/events.js'
+import type {
+  EventsErrorBody,
+  EventsSuccessBody,
+} from '../../schemas/events.js'
 import { parseEventsBody } from '../../schemas/events.js'
 
 export const eventsRoute = new Hono()
@@ -44,7 +48,7 @@ eventsRoute.post('/', async (c) => {
     return c.json(body, 400)
   }
 
-  const envelope = buildAcceptedEnvelope(result.value)
+  const envelope = buildAcceptedEnvelope()
   const body: EventsSuccessBody = {
     ok: true,
     id: envelope.id,
@@ -53,9 +57,9 @@ eventsRoute.post('/', async (c) => {
   return c.json(body, 202)
 })
 
-function buildAcceptedEnvelope(_payload: ParsedEventPayload): { id: string; receivedAt: string } {
+function buildAcceptedEnvelope(): { id: string; receivedAt: string } {
   return {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     receivedAt: new Date().toISOString(),
   }
 }

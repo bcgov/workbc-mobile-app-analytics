@@ -24,7 +24,9 @@ export function createApp(env: AppEnv, log: Logger): Hono {
       path: c.req.path,
     })
     const message =
-      env.nodeEnv === 'development' ? err.message : 'An unexpected error occurred'
+      env.nodeEnv === 'development'
+        ? err.message
+        : 'An unexpected error occurred'
     return c.json(
       {
         ok: false,

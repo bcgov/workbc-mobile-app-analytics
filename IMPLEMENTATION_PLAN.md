@@ -2,12 +2,12 @@
 
 Use **one Cursor agent session per row** in [Session progress](#session-progress). Update checkboxes and **Notes** as you complete work.
 
-| Field | Value |
-|-------|--------|
-| **Epic / ticket** | _link_ |
-| **Target org/repo** | `bcgov/workbc-mobile-app-analytics` |
-| **Default branch** | `main` |
-| **Primary maintainer / channel** | _fill in Session 8_ |
+| Field                            | Value                               |
+| -------------------------------- | ----------------------------------- |
+| **Epic / ticket**                | _link_                              |
+| **Target org/repo**              | `bcgov/workbc-mobile-app-analytics` |
+| **Default branch**               | `main`                              |
+| **Primary maintainer / channel** | _fill in Session 8_                 |
 
 ---
 
@@ -15,16 +15,16 @@ Use **one Cursor agent session per row** in [Session progress](#session-progress
 
 Update **Done** when the session’s deliverables are merged (or intentionally deferred). Add **Completed (date)** when you close the session.
 
-| Session | Done | Completed (date) | Notes / blockers |
-|---------|:----:|------------------|------------------|
-| [1 — Repo governance](#session-1--repository-governance-and-bootstrap) | [x] | 2026-05-07 | README + `docs/org-setup-checklist.md`; remote `bcgov/workbc-mobile-app-analytics`, branch `main`. Confirm repo visibility in GitHub UI. |
-| [2 — Hono skeleton](#session-2--application-skeleton-hono-typescript-versioned-api) | [x] | 2026-05-07 | HANDOFF Session 3: Routes `POST /v1/events` (202 accept). Example: `curl -sS -X POST http://localhost:3000/v1/events -H "Content-Type: application/json" -d '{"eventName":"screen_view"}'`. Stable JSON: success `{ ok, id, receivedAt }`; errors `{ ok:false, error:{ code, message, fields? } }`. OpenAPI deferred. Package manager: npm. |
-| [3 — Ops baseline](#session-3--operations-baseline-logging-health-config) | [x] | 2026-05-07 | HANDOFF Session 4: Env vars — `PORT` (default 3000), `NODE_ENV`, `LOG_LEVEL` (`debug`|`info`|`warn`|`error`). JSON logs: `server_listen`, `http_request` (INFO), `http_server_error` + `unhandled_error` (ERROR). Probes: `GET /health`, `GET /ready` (alias until deps). See `.env.example`. |
-| [4 — Quality local](#session-4--quality-gates-locally-lint-format-tests-build) | [ ] | | |
-| [5 — CI](#session-5--ci-pipeline) | [ ] | | |
-| [6 — Docker](#session-6--containerization-conditional) | [ ] | | |
-| [7 — bcgov hygiene](#session-7--bcgov-repository-hygiene-and-security-baseline) | [ ] | | |
-| [8 — Handoff](#session-8--handoff-and-epic-closure) | [ ] | | |
+| Session                                                                             | Done | Completed (date) | Notes / blockers                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------------------------------------------------------------- | :--: | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [1 — Repo governance](#session-1--repository-governance-and-bootstrap)              | [x]  | 2026-05-07       | README + `docs/org-setup-checklist.md`; remote `bcgov/workbc-mobile-app-analytics`, branch `main`. Confirm repo visibility in GitHub UI.                                                                                                                                                                                                    |
+| [2 — Hono skeleton](#session-2--application-skeleton-hono-typescript-versioned-api) | [x]  | 2026-05-07       | HANDOFF Session 3: Routes `POST /v1/events` (202 accept). Example: `curl -sS -X POST http://localhost:3000/v1/events -H "Content-Type: application/json" -d '{"eventName":"screen_view"}'`. Stable JSON: success `{ ok, id, receivedAt }`; errors `{ ok:false, error:{ code, message, fields? } }`. OpenAPI deferred. Package manager: npm. |
+| [3 — Ops baseline](#session-3--operations-baseline-logging-health-config)           | [x]  | 2026-05-07       | HANDOFF Session 4: Env vars — `PORT` (default 3000), `NODE_ENV`, `LOG_LEVEL` (levels: debug, info, warn, error). JSON logs: `server_listen`, `http_request` (INFO), `http_server_error` + `unhandled_error` (ERROR). Probes: `GET /health`, `GET /ready` (alias until deps). See `.env.example`.                                            |
+| [4 — Quality local](#session-4--quality-gates-locally-lint-format-tests-build)      | [x]  | 2026-05-08       | HANDOFF Session 5: `npm run lint`, `npm run format:check`, `npm run test`, `npm run build` green on Node matching `engines`. ESLint ^9, Prettier, Vitest ^2; tests in `test/app.test.ts`. IDs use `node:crypto` `randomUUID`. README: scripts, env table, source maps note.                                                                 |
+| [5 — CI](#session-5--ci-pipeline)                                                   | [ ]  |                  |                                                                                                                                                                                                                                                                                                                                             |
+| [6 — Docker](#session-6--containerization-conditional)                              | [ ]  |                  |                                                                                                                                                                                                                                                                                                                                             |
+| [7 — bcgov hygiene](#session-7--bcgov-repository-hygiene-and-security-baseline)     | [ ]  |                  |                                                                                                                                                                                                                                                                                                                                             |
+| [8 — Handoff](#session-8--handoff-and-epic-closure)                                 | [ ]  |                  |                                                                                                                                                                                                                                                                                                                                             |
 
 ---
 
@@ -82,10 +82,10 @@ Update **Done** when the session’s deliverables are merged (or intentionally d
 
 **Goal:** ESLint/Prettier (or org-aligned tool), Vitest/Jest for routes, `npm run build` → runnable `dist`; README dev instructions.
 
-- [ ] Lint + format wired; scripts in `package.json`
-- [ ] Unit/route tests: happy path + bad body for analytics; health returns 200 + expected JSON
-- [ ] `tsconfig` + source maps decision; README paragraph on maps in prod
-- [ ] README: install, copy `.env.example`, `dev` / `test` / `build` / `start`
+- [x] Lint + format wired; scripts in `package.json`
+- [x] Unit/route tests: happy path + bad body for analytics; health returns 200 + expected JSON
+- [x] `tsconfig` + source maps decision; README paragraph on maps in prod
+- [x] README: install, copy `.env.example`, `dev` / `test` / `build` / `start`
 
 **Handoff for Session 5:** Local `lint`, `test`, `build` all green.
 
@@ -165,7 +165,7 @@ Track overall completion here; many items map to sessions above.
 **Build and quality**
 
 - [x] TypeScript build: `npm run build` (or equivalent) produces runnable artifact
-- [ ] Source maps strategy documented if required
+- [x] Source maps strategy documented if required
 - [ ] Lint + tests in CI; failures block merge per policy
 
 **Security and ops**
@@ -194,8 +194,8 @@ Track overall completion here; many items map to sessions above.
 
 ## Risks (rolling)
 
-| Risk | Status / mitigation |
-|------|---------------------|
-| Org templates, scanners, Actions delays | |
-| Deployment target (e.g. OpenShift) undecided | |
-| Mandatory scanner blocks merge temporarily | |
+| Risk                                         | Status / mitigation |
+| -------------------------------------------- | ------------------- |
+| Org templates, scanners, Actions delays      |                     |
+| Deployment target (e.g. OpenShift) undecided |                     |
+| Mandatory scanner blocks merge temporarily   |                     |

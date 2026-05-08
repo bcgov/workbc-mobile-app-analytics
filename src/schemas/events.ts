@@ -26,7 +26,9 @@ export type ParsedEventPayload = {
 
 export function parseEventsBody(
   raw: unknown,
-): { ok: true; value: ParsedEventPayload } | { ok: false; message: string; fields?: Record<string, string> } {
+):
+  | { ok: true; value: ParsedEventPayload }
+  | { ok: false; message: string; fields?: Record<string, string> } {
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
     return { ok: false, message: 'Request body must be a JSON object' }
   }
@@ -51,7 +53,11 @@ export function parseEventsBody(
 
   let properties: Record<string, unknown> | undefined
   if (body.properties !== undefined) {
-    if (body.properties === null || typeof body.properties !== 'object' || Array.isArray(body.properties)) {
+    if (
+      body.properties === null ||
+      typeof body.properties !== 'object' ||
+      Array.isArray(body.properties)
+    ) {
       return {
         ok: false,
         message: 'properties must be a JSON object when provided',
