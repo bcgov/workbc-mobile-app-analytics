@@ -1,0 +1,26 @@
+{
+  "name": "workbc-mobile-app-analytics",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WorkBC mobile app analytics API",
+  "type": "module",
+  "engines": {
+    "node": ">=24.7.0"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.7",
+    "dotenv": "^17.4.2",
+    "hono": "^4.11.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
