@@ -21,7 +21,7 @@ jobs:
         timeout-minutes: 45
         steps:
             - name: Log in to OpenShift
-              uses: redhat-actions/oc-login@v4
+              uses: redhat-actions/oc-login@v1
               with:
                   openshift_server_url: ${{ secrets.OCP4_SERVER_URL }}
                   openshift_token: ${{ secrets.API_TOKEN }}
