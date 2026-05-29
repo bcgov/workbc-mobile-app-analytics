@@ -1,0 +1,129 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+    creationTimestamp: null
+    name: workbc-mobile-app-analytics
+labels:
+    template: workbc-mobile-app-analytics
+objects:
+    - apiVersion: v1
+      kind: DeploymentConfig
+      metadata:
+          creationTimestamp: null
+          name: ${NAME}${SUFFIX}
+          labels:
+              app.kubernetes.io/component: analytics-api
+              app.kubernetes.io/part-of: ${APP_PART}
+              app.openshift.io/runtime: nodejs
+      spec:
+          replicas: 1
+          selector:
+              deploymentconfig: ${NAME}${SUFFIX}
+          template:
+              metadata:
+                  creationTimestamp: null
+                  labels:
+                      deploymentconfig: ${NAME}${SUFFIX}
+              spec:
+                  containers:
+                      - image: ${NAME}:${TAG}
+                        name: ${NAME}
+                        ports:
+                            - containerPort: ${CONTAINER_PORT}
+                              protocol: TCP
+                        resources:
+                            limits:
+                                cpu: 500m
+                                memory: 256Mi
+                            requests:
+                                cpu: 50m
+                                memory: 128Mi
+                        livenessProbe:
+                            httpGet:
+                                path: /health
+                                port: ${CONTAINER_PORT}
+                            initialDelaySeconds: 15
+                            timeoutSeconds: 3
+                            periodSeconds: 10
+                            failureThreshold: 3
+                        readinessProbe:
+                            httpGet:
+                                path: /ready
+                                port: ${CONTAINER_PORT}
+                            initialDelaySeconds: 5
+                            timeoutSeconds: 3
+                            periodSeconds: 10
+                            failureThreshold: 3
+                        env:
+                            - name: PORT
+                              value: "${CONTAINER_PORT}"
+                            - name: NODE_ENV
+                              value: ${NODE_ENV}
+                            - name: LOG_LEVEL
+                              value: ${LOG_LEVEL}
+          test: false
+          triggers:
+              - type: ConfigChange
+              - imageChangeParams:
+                    automatic: true
+                    containerNames:
+                        - ${NAME}
+                    from:
+                        kind: ImageStreamTag
+                        name: ${NAME}:${TAG}
+                        namespace: ${IMAGE_NAMESPACE}
+                type: ImageChange
+    - apiVersion: v1
+      kind: Service
+      metadata:
+          creationTimestamp: null
+          name: ${NAME}${SUFFIX}
+      spec:
+          ports:
+              - name: http
+                port: ${CONTAINER_PORT}
+                protocol: TCP
+                targetPort: ${CONTAINER_PORT}
+          selector:
+              deploymentconfig: ${NAME}${SUFFIX}
+parameters:
+    - description: A name used for all objects
+      displayName: Name
+      name: NAME
+      required: true
+      value: workbc-mobile-app-analytics
+    - description: App part of
+      displayName: App part of
+      name: APP_PART
+      required: true
+      value: workbc-mobile
+    - description: A name suffix used for all objects
+      displayName: Suffix
+      name: SUFFIX
+      required: false
+      value: ""
+    - description: Tag used for the image tags
+      displayName: tag
+      name: TAG
+      required: true
+      value: latest
+    - description: HTTP port exposed by the container (must match Dockerfile EXPOSE and PORT)
+      displayName: Container port
+      name: CONTAINER_PORT
+      required: true
+      value: "8080"
+    - description: NODE_ENV for the application
+      displayName: Node environment
+      name: NODE_ENV
+      required: true
+      value: production
+    - description: Minimum log level (debug|info|warn|error)
+      displayName: Log level
+      name: LOG_LEVEL
+      required: true
+      value: info
+    - description: Namespace containing the ImageStream built by the BuildConfig (often *-tools)
+      displayName: Image namespace
+      name: IMAGE_NAMESPACE
+      required: true
+      value: myproject-tools
