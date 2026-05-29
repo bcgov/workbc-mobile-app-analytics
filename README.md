@@ -9,7 +9,7 @@ Backend API for collecting and serving analytics events from the WorkBC mobile a
 
 ## Prerequisites
 
-- **Node.js** version in `package.json` → `engines.node` (use `nvm`, `fnm`, or similar to match locally and in CI).
+- **Node.js** version in `package.json` → `engines.node` (use `nvm`, `fnm`, or similar to match locally and in OpenShift builds).
 
 ## Getting started
 
