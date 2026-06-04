@@ -8,6 +8,17 @@ import { parseEventsBody } from '../../schemas/events.js'
 
 export const eventsRoute = new Hono()
 
+eventsRoute.post('/pinning-error', async (c) => {
+  try {
+    const parsedJson = await c.req.json()
+    console.log('Pinning error received: ', parsedJson)
+    return c.json({ success: true })
+  } catch (e: unknown) {
+    console.log('Pinning endpoint error: ', e)
+    return c.json({ success: false })
+  }
+})
+
 eventsRoute.post('/', async (c) => {
   const contentType = (c.req.header('content-type') ?? '').toLowerCase()
   if (contentType !== '' && !contentType.includes('application/json')) {
