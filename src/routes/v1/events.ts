@@ -1,5 +1,9 @@
 import { randomUUID } from 'node:crypto'
 import { Hono } from 'hono'
+import {
+  type EventsVariables,
+  parseJsonBody,
+} from '../../middleware/parseJsonBody.js'
 import { requireJsonContentType } from '../../middleware/requireJsonContentType.js'
 import type {
   EventsErrorBody,
@@ -7,35 +11,19 @@ import type {
 } from '../../schemas/events.js'
 import { parseEventsBody } from '../../schemas/events.js'
 
-export const eventsRoute = new Hono()
+export const eventsRoute = new Hono<{ Variables: EventsVariables }>()
 
 eventsRoute.use('*', requireJsonContentType)
+eventsRoute.use('*', parseJsonBody)
 
 eventsRoute.post('/pinning-error', async (c) => {
-  try {
-    const parsedJson = await c.req.json()
-    console.log('Pinning error received: ', parsedJson)
-    return c.json({ success: true })
-  } catch (e: unknown) {
-    console.log('Pinning endpoint error: ', e)
-    return c.json({ success: false })
-  }
+  const parsedJson = c.get('parsedJson')
+  console.log('Pinning error received: ', parsedJson)
+  return c.json({ success: true })
 })
 
 eventsRoute.post('/', async (c) => {
-  let parsedJson: unknown
-  try {
-    parsedJson = await c.req.json()
-  } catch {
-    const body: EventsErrorBody = {
-      ok: false,
-      error: {
-        code: 'INVALID_JSON',
-        message: 'Body must be valid JSON',
-      },
-    }
-    return c.json(body, 400)
-  }
+  const parsedJson = c.get('parsedJson')
 
   const result = parseEventsBody(parsedJson)
   if (!result.ok) {
