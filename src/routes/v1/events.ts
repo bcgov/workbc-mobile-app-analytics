@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { Hono } from 'hono'
+import { requireJsonContentType } from '../../middleware/requireJsonContentType.js'
 import type {
   EventsErrorBody,
   EventsSuccessBody,
@@ -7,6 +8,8 @@ import type {
 import { parseEventsBody } from '../../schemas/events.js'
 
 export const eventsRoute = new Hono()
+
+eventsRoute.use('*', requireJsonContentType)
 
 eventsRoute.post('/pinning-error', async (c) => {
   try {
@@ -20,18 +23,6 @@ eventsRoute.post('/pinning-error', async (c) => {
 })
 
 eventsRoute.post('/', async (c) => {
-  const contentType = (c.req.header('content-type') ?? '').toLowerCase()
-  if (contentType !== '' && !contentType.includes('application/json')) {
-    const body: EventsErrorBody = {
-      ok: false,
-      error: {
-        code: 'UNSUPPORTED_MEDIA_TYPE',
-        message: 'Content-Type must be application/json',
-      },
-    }
-    return c.json(body, 415)
-  }
-
   let parsedJson: unknown
   try {
     parsedJson = await c.req.json()
