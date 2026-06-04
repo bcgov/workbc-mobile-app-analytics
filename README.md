@@ -38,6 +38,7 @@ Backend API for collecting and serving analytics events from the WorkBC mobile a
 | `PORT`      | HTTP listen port  | `.env.example` (e.g. `4000`)           |
 | `NODE_ENV`  | Runtime profile   | `development`                          |
 | `LOG_LEVEL` | Minimum log level | `debug` \| `info` \| `warn` \| `error` |
+| `API_KEY`   | Shared secret for `/v1/events` and `/v1/errors` | Set in `.env` (never commit) |
 
 Structured logs use JSON (see middleware and startup in `src/`).
 
@@ -48,6 +49,7 @@ With the server running:
 ```bash
 curl -sS -X POST "http://localhost:${PORT:-4000}/v1/events" \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: $API_KEY" \
   -d '{"eventName":"screen_view"}'
 ```
 

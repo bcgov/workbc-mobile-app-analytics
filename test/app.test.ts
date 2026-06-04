@@ -3,10 +3,17 @@ import { createApp } from '../src/app.js'
 import type { AppEnv } from '../src/config/env.js'
 import type { Logger } from '../src/lib/logger.js'
 
+const testApiKey = 'test-api-key'
+
 const testEnv: AppEnv = {
   port: 3000,
   nodeEnv: 'test',
   logLevel: 'error',
+  apiKey: testApiKey,
+}
+
+function apiKeyHeaders(): Record<string, string> {
+  return { 'X-API-Key': testApiKey }
 }
 
 const noopLogger: Logger = {
@@ -32,10 +39,29 @@ describe('createApp', () => {
     expect(body).toMatchObject({ status: 'ready' })
   })
 
-  it('POST /v1/events accepts a valid body with 202', async () => {
+  it('POST /v1/events returns 401 without API key', async () => {
     const res = await app.request('/v1/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'screen_view' }),
+    })
+    expect(res.status).toBe(401)
+    await expect(res.json()).resolves.toEqual({
+      ok: false,
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'Valid API key is required',
+      },
+    })
+  })
+
+  it('POST /v1/events accepts a valid body with 202', async () => {
+    const res = await app.request('/v1/events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...apiKeyHeaders(),
+      },
       body: JSON.stringify({ eventName: 'screen_view' }),
     })
     expect(res.status).toBe(202)
@@ -48,7 +74,10 @@ describe('createApp', () => {
   it('POST /v1/events returns 400 for body missing eventName', async () => {
     const res = await app.request('/v1/events', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...apiKeyHeaders(),
+      },
       body: JSON.stringify({}),
     })
     expect(res.status).toBe(400)
@@ -63,10 +92,22 @@ describe('createApp', () => {
     })
   })
 
-  it('POST /v1/errors/pinning accepts JSON body', async () => {
+  it('POST /v1/errors/pinning returns 401 without API key', async () => {
     const res = await app.request('/v1/errors/pinning', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ host: 'api.example.com', reason: 'pin mismatch' }),
+    })
+    expect(res.status).toBe(401)
+  })
+
+  it('POST /v1/errors/pinning accepts JSON body', async () => {
+    const res = await app.request('/v1/errors/pinning', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...apiKeyHeaders(),
+      },
       body: JSON.stringify({ host: 'api.example.com', reason: 'pin mismatch' }),
     })
     expect(res.status).toBe(200)
@@ -76,7 +117,10 @@ describe('createApp', () => {
   it('POST /v1/events returns 400 for invalid JSON', async () => {
     const res = await app.request('/v1/events', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...apiKeyHeaders(),
+      },
       body: 'not-json',
     })
     expect(res.status).toBe(400)

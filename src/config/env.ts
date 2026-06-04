@@ -7,6 +7,7 @@ export type AppEnv = {
   port: number
   nodeEnv: string
   logLevel: z.infer<typeof logLevelSchema>
+  apiKey: string
 }
 
 function parsePort(raw: string | undefined): number {
@@ -22,13 +23,14 @@ function parsePort(raw: string | undefined): number {
   return n
 }
 
-const optionalEnvSchema = z.object({
+const envSchema = z.object({
+  API_KEY: z.string().min(1, 'API_KEY is required'),
   NODE_ENV: z.string().default('development'),
   LOG_LEVEL: logLevelSchema.default('info'),
 })
 
 export function loadEnv(): AppEnv {
-  const parsed = optionalEnvSchema.safeParse(process.env)
+  const parsed = envSchema.safeParse(process.env)
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map((i) => `${i.path.join('.')}: ${i.message}`)
@@ -49,6 +51,7 @@ export function loadEnv(): AppEnv {
       port: parsePort(process.env.PORT),
       nodeEnv: parsed.data.NODE_ENV,
       logLevel: parsed.data.LOG_LEVEL,
+      apiKey: parsed.data.API_KEY,
     }
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)

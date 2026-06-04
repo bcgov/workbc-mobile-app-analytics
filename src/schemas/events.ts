@@ -17,6 +17,7 @@ export type EventsErrorCode =
   | 'INVALID_JSON'
   | 'VALIDATION_ERROR'
   | 'UNSUPPORTED_MEDIA_TYPE'
+  | 'UNAUTHORIZED'
 
 export type ParsedEventPayload = {
   eventName: string

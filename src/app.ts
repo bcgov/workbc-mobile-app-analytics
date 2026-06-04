@@ -3,8 +3,8 @@ import type { AppEnv } from './config/env.js'
 import type { Logger } from './lib/logger.js'
 import { requestLogMiddleware } from './middleware/requestLog.js'
 import { healthRoute } from './routes/health.js'
-import { errorsRoute } from './routes/v1/errors.js'
-import { eventsRoute } from './routes/v1/events.js'
+import { createErrorsRoute } from './routes/v1/errors.js'
+import { createEventsRoute } from './routes/v1/events.js'
 
 export function createApp(env: AppEnv, log: Logger): Hono {
   const app = new Hono()
@@ -14,8 +14,8 @@ export function createApp(env: AppEnv, log: Logger): Hono {
   app.route('/', healthRoute)
 
   const v1 = new Hono()
-  v1.route('/events', eventsRoute)
-  v1.route('/errors', errorsRoute)
+  v1.route('/events', createEventsRoute(env.apiKey))
+  v1.route('/errors', createErrorsRoute(env.apiKey))
   app.route('/v1', v1)
 
   app.onError((err, c) => {
