@@ -63,6 +63,16 @@ describe('createApp', () => {
     })
   })
 
+  it('POST /v1/errors/pinning accepts JSON body', async () => {
+    const res = await app.request('/v1/errors/pinning', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ host: 'api.example.com', reason: 'pin mismatch' }),
+    })
+    expect(res.status).toBe(200)
+    await expect(res.json()).resolves.toEqual({ success: true })
+  })
+
   it('POST /v1/events returns 400 for invalid JSON', async () => {
     const res = await app.request('/v1/events', {
       method: 'POST',

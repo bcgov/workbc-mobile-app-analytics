@@ -16,12 +16,6 @@ export const eventsRoute = new Hono<{ Variables: EventsVariables }>()
 eventsRoute.use('*', requireJsonContentType)
 eventsRoute.use('*', parseJsonBody)
 
-eventsRoute.post('/pinning-error', async (c) => {
-  const parsedJson = c.get('parsedJson')
-  console.log('Pinning error received: ', parsedJson)
-  return c.json({ success: true })
-})
-
 eventsRoute.post('/', async (c) => {
   const parsedJson = c.get('parsedJson')
 
