@@ -10,6 +10,7 @@ import type {
   EventsErrorBody,
   EventsSuccessBody,
 } from '../../schemas/events.js'
+import { jsonErrorResponse } from '../../middleware/responseError.js'
 import { parseEventsBody } from '../../schemas/events.js'
 
 export function createEventsRoute(apiKey: string) {
@@ -32,7 +33,7 @@ export function createEventsRoute(apiKey: string) {
           ...(result.fields ? { fields: result.fields } : {}),
         },
       }
-      return c.json(body, 400)
+      return jsonErrorResponse(c, body, 400)
     }
 
     // TODO: Implement event processing

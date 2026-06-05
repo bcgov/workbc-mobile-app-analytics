@@ -1,5 +1,6 @@
 import type { MiddlewareHandler } from 'hono'
 import type { EventsErrorBody } from '../schemas/events.js'
+import { jsonErrorResponse } from './responseError.js'
 
 export const requireJsonContentType: MiddlewareHandler = async (c, next) => {
   const contentType = (c.req.header('content-type') ?? '').toLowerCase()
@@ -11,7 +12,7 @@ export const requireJsonContentType: MiddlewareHandler = async (c, next) => {
         message: 'Content-Type must be application/json',
       },
     }
-    return c.json(body, 415)
+    return jsonErrorResponse(c, body, 415)
   }
   await next()
 }

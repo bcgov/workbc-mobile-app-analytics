@@ -1,5 +1,6 @@
 import type { MiddlewareHandler } from 'hono'
 import type { EventsErrorBody } from '../schemas/events.js'
+import { jsonErrorResponse } from './responseError.js'
 
 export type EventsVariables = {
   parsedJson: unknown
@@ -19,7 +20,7 @@ export const parseJsonBody: MiddlewareHandler<{
         message: 'Body must be valid JSON',
       },
     }
-    return c.json(body, 400)
+    return jsonErrorResponse(c, body, 400)
   }
   c.set('parsedJson', parsedJson)
   await next()

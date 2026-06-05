@@ -71,6 +71,34 @@ describe('createApp', () => {
     expect(typeof body.receivedAt).toBe('string')
   })
 
+  it('POST /v1/events logs validation error details on 400', async () => {
+    const logs: Record<string, unknown>[] = []
+    const captureLogger: Logger = {
+      debug: (fields) => logs.push(fields),
+      info: (fields) => logs.push(fields),
+      warn: (fields) => logs.push(fields),
+      error: (fields) => logs.push(fields),
+    }
+    const loggingApp = createApp(testEnv, captureLogger)
+
+    await loggingApp.request('/v1/events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...apiKeyHeaders(),
+      },
+      body: JSON.stringify({}),
+    })
+
+    const requestLog = logs.find((entry) => entry.msg === 'http_request')
+    expect(requestLog).toMatchObject({
+      status: 400,
+      errorCode: 'VALIDATION_ERROR',
+      errorMessage: 'eventName is required',
+      errorFields: { eventName: 'required' },
+    })
+  })
+
   it('POST /v1/events returns 400 for body missing eventName', async () => {
     const res = await app.request('/v1/events', {
       method: 'POST',

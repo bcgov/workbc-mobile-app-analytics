@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto'
 import type { MiddlewareHandler } from 'hono'
 import type { EventsErrorBody } from '../schemas/events.js'
+import { jsonErrorResponse } from './responseError.js'
 
 function getProvidedApiKey(getHeader: (name: string) => string | undefined): string | undefined {
   const xApiKey = getHeader('X-API-Key')
@@ -35,7 +36,7 @@ export function createRequireApiKey(expectedKey: string): MiddlewareHandler {
           message: 'Valid API key is required',
         },
       }
-      return c.json(body, 401)
+      return jsonErrorResponse(c, body, 401)
     }
     await next()
   }

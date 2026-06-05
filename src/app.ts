@@ -1,13 +1,16 @@
 import { Hono } from 'hono'
 import type { AppEnv } from './config/env.js'
 import type { Logger } from './lib/logger.js'
-import { requestLogMiddleware } from './middleware/requestLog.js'
+import {
+  type RequestLogVariables,
+  requestLogMiddleware,
+} from './middleware/requestLog.js'
 import { healthRoute } from './routes/health.js'
 import { createErrorsRoute } from './routes/v1/errors.js'
 import { createEventsRoute } from './routes/v1/events.js'
 
-export function createApp(env: AppEnv, log: Logger): Hono {
-  const app = new Hono()
+export function createApp(env: AppEnv, log: Logger): Hono<{ Variables: RequestLogVariables }> {
+  const app = new Hono<{ Variables: RequestLogVariables }>()
 
   app.use('*', requestLogMiddleware(log, env))
 

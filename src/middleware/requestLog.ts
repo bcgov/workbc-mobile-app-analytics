@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type { MiddlewareHandler } from 'hono'
 import type { AppEnv } from '../config/env.js'
 import type { Logger } from '../lib/logger.js'
+import type { ResponseErrorVariables } from './responseError.js'
 
 export function requestLogMiddleware(
   log: Logger,
@@ -13,6 +14,7 @@ export function requestLogMiddleware(
     await next()
     const durationMs = Math.round(performance.now() - start)
     const status = c.res.status
+    const responseError = c.get('responseError')
     const base = {
       msg: 'http_request',
       requestId,
@@ -21,6 +23,15 @@ export function requestLogMiddleware(
       status,
       durationMs,
       nodeEnv: env.nodeEnv,
+      ...(responseError
+        ? {
+            errorCode: responseError.code,
+            errorMessage: responseError.message,
+            ...(responseError.fields
+              ? { errorFields: responseError.fields }
+              : {}),
+          }
+        : {}),
     }
     log.info(base)
     if (status >= 500) {
@@ -28,3 +39,5 @@ export function requestLogMiddleware(
     }
   }
 }
+
+export type RequestLogVariables = ResponseErrorVariables
