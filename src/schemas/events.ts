@@ -25,16 +25,30 @@ export type ParsedEventPayload = {
   properties?: Record<string, unknown>
 }
 
+const BODY_META_KEYS = new Set(['eventName', 'properties'])
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function topLevelEventProperties(
+  body: Record<string, unknown>,
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(body).filter(([key]) => !BODY_META_KEYS.has(key)),
+  )
+}
+
 export function parseEventsBody(
   raw: unknown,
 ):
   | { ok: true; value: ParsedEventPayload }
   | { ok: false; message: string; fields?: Record<string, string> } {
-  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+  if (!isRecord(raw)) {
     return { ok: false, message: 'Request body must be a JSON object' }
   }
 
-  const body = raw as Record<string, unknown>
+  const body = raw
   const eventName = body.eventName
 
   if (eventName === undefined || eventName === null) {
@@ -52,20 +66,23 @@ export function parseEventsBody(
     }
   }
 
+  const fromTopLevel = topLevelEventProperties(body)
+
   let properties: Record<string, unknown> | undefined
   if (body.properties !== undefined) {
-    if (
-      body.properties === null ||
-      typeof body.properties !== 'object' ||
-      Array.isArray(body.properties)
-    ) {
+    if (!isRecord(body.properties)) {
       return {
         ok: false,
         message: 'properties must be a JSON object when provided',
         fields: { properties: 'invalid' },
       }
     }
-    properties = body.properties as Record<string, unknown>
+    properties = {
+      ...fromTopLevel,
+      ...body.properties,
+    }
+  } else if (Object.keys(fromTopLevel).length > 0) {
+    properties = fromTopLevel
   }
 
   return {

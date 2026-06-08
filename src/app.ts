@@ -1,23 +1,32 @@
 import { Hono } from 'hono'
 import type { AppEnv } from './config/env.js'
+import type { EventsRepository } from './db/eventsRepository.js'
 import type { Logger } from './lib/logger.js'
-import {
-  type RequestLogVariables,
-  requestLogMiddleware,
-} from './middleware/requestLog.js'
+import { requestLogMiddleware } from './middleware/requestLog.js'
 import { healthRoute } from './routes/health.js'
 import { createErrorsRoute } from './routes/v1/errors.js'
 import { createEventsRoute } from './routes/v1/events.js'
 
-export function createApp(env: AppEnv, log: Logger): Hono<{ Variables: RequestLogVariables }> {
-  const app = new Hono<{ Variables: RequestLogVariables }>()
+export type AppDeps = {
+  events: EventsRepository
+}
+
+export function createApp(env: AppEnv, log: Logger, deps: AppDeps): Hono {
+  const app = new Hono()
 
   app.use('*', requestLogMiddleware(log, env))
 
   app.route('/', healthRoute)
 
   const v1 = new Hono()
-  v1.route('/events', createEventsRoute(env.apiKey))
+  v1.route(
+    '/events',
+    createEventsRoute({
+      apiKey: env.apiKey,
+      insertEvent: deps.events.insertEvent,
+      log,
+    }),
+  )
   v1.route('/errors', createErrorsRoute(env.apiKey))
   app.route('/v1', v1)
 
