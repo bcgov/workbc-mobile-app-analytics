@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { Hono } from 'hono'
+import { mapEventRow } from '../../db/mapEventRow.js'
+import type { Logger } from '../../lib/logger.js'
 import {
   type EventsVariables,
   parseJsonBody,
@@ -10,13 +12,19 @@ import type {
   EventsErrorBody,
   EventsSuccessBody,
 } from '../../schemas/events.js'
-import { jsonErrorResponse } from '../../middleware/responseError.js'
 import { parseEventsBody } from '../../schemas/events.js'
+import type { EventInsertRow } from '../../db/mapEventRow.js'
 
-export function createEventsRoute(apiKey: string) {
+export type EventsRouteDeps = {
+  apiKey: string
+  insertEvent: (row: EventInsertRow) => Promise<void>
+  log?: Logger
+}
+
+export function createEventsRoute(deps: EventsRouteDeps) {
   const eventsRoute = new Hono<{ Variables: EventsVariables }>()
 
-  eventsRoute.use('*', createRequireApiKey(apiKey))
+  eventsRoute.use('*', createRequireApiKey(deps.apiKey))
   eventsRoute.use('*', requireJsonContentType)
   eventsRoute.use('*', parseJsonBody)
 
@@ -33,12 +41,19 @@ export function createEventsRoute(apiKey: string) {
           ...(result.fields ? { fields: result.fields } : {}),
         },
       }
-      return jsonErrorResponse(c, body, 400)
+      return c.json(body, 400)
     }
 
-    // TODO: Implement event processing
+    deps.log?.debug({
+      msg: 'event_parsed',
+      eventName: result.value.eventName,
+      propertyKeys: Object.keys(result.value.properties ?? {}),
+    })
 
     const envelope = buildAcceptedEnvelope()
+    const row = mapEventRow(result.value, envelope)
+    await deps.insertEvent(row)
+
     const body: EventsSuccessBody = {
       ok: true,
       id: envelope.id,

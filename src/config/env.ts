@@ -8,6 +8,7 @@ export type AppEnv = {
   nodeEnv: string
   logLevel: z.infer<typeof logLevelSchema>
   apiKey: string
+  databaseUrl: string
 }
 
 function parsePort(raw: string | undefined): number {
@@ -25,6 +26,7 @@ function parsePort(raw: string | undefined): number {
 
 const envSchema = z.object({
   API_KEY: z.string().min(1, 'API_KEY is required'),
+  DATABASE_URL: z.url('DATABASE_URL must be a valid URL'),
   NODE_ENV: z.string().default('development'),
   LOG_LEVEL: logLevelSchema.default('info'),
 })
@@ -52,6 +54,7 @@ export function loadEnv(): AppEnv {
       nodeEnv: parsed.data.NODE_ENV,
       logLevel: parsed.data.LOG_LEVEL,
       apiKey: parsed.data.API_KEY,
+      databaseUrl: parsed.data.DATABASE_URL,
     }
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)

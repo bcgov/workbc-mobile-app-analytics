@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../src/app.js'
 import type { AppEnv } from '../src/config/env.js'
+import type { EventInsertRow } from '../src/db/mapEventRow.js'
 import type { Logger } from '../src/lib/logger.js'
 
 const testApiKey = 'test-api-key'
@@ -10,6 +11,7 @@ const testEnv: AppEnv = {
   nodeEnv: 'test',
   logLevel: 'error',
   apiKey: testApiKey,
+  databaseUrl: 'postgresql://localhost:5432/test',
 }
 
 function apiKeyHeaders(): Record<string, string> {
@@ -24,7 +26,9 @@ const noopLogger: Logger = {
 }
 
 describe('createApp', () => {
-  const app = createApp(testEnv, noopLogger)
+  const app = createApp(testEnv, noopLogger, {
+    events: { insertEvent: async () => {} },
+  })
 
   it('GET /health returns 200 and expected JSON', async () => {
     const res = await app.request('/health')
@@ -71,31 +75,104 @@ describe('createApp', () => {
     expect(typeof body.receivedAt).toBe('string')
   })
 
-  it('POST /v1/events logs validation error details on 400', async () => {
-    const logs: Record<string, unknown>[] = []
-    const captureLogger: Logger = {
-      debug: (fields) => logs.push(fields),
-      info: (fields) => logs.push(fields),
-      warn: (fields) => logs.push(fields),
-      error: (fields) => logs.push(fields),
-    }
-    const loggingApp = createApp(testEnv, captureLogger)
+  it('POST /v1/events stores flat top-level fields via insertEvent', async () => {
+    let inserted: EventInsertRow | undefined
+    const capturingApp = createApp(testEnv, noopLogger, {
+      events: {
+        insertEvent: async (row) => {
+          inserted = row
+        },
+      },
+    })
 
-    await loggingApp.request('/v1/events', {
+    const res = await capturingApp.request('/v1/events', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...apiKeyHeaders(),
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify({
+        eventName: 'screen_view',
+        screenName: 'HomeScreen',
+        previousScreenName: 'Landing',
+        platform: 'ios',
+        timestamp: '2026-06-04T21:51:26.054Z',
+        sessionId: '83af1260-a536-4749-a7ed-5da92e6d3510',
+        isAuthenticated: 'true',
+      }),
     })
 
-    const requestLog = logs.find((entry) => entry.msg === 'http_request')
-    expect(requestLog).toMatchObject({
-      status: 400,
-      errorCode: 'VALIDATION_ERROR',
-      errorMessage: 'eventName is required',
-      errorFields: { eventName: 'required' },
+    expect(res.status).toBe(202)
+    expect(inserted).toBeDefined()
+    expect(inserted!.screenName).toBe('HomeScreen')
+    expect(inserted!.platform).toBe('ios')
+    expect(inserted!.sessionId).toBe('83af1260-a536-4749-a7ed-5da92e6d3510')
+    expect(inserted!.isAuthenticated).toBe(true)
+    expect(inserted!.properties).toEqual({
+      previousScreenName: 'Landing',
+    })
+  })
+
+  it('POST /v1/events stores event-specific properties via insertEvent', async () => {
+    let inserted: EventInsertRow | undefined
+    const capturingApp = createApp(testEnv, noopLogger, {
+      events: {
+        insertEvent: async (row) => {
+          inserted = row
+        },
+      },
+    })
+
+    const res = await capturingApp.request('/v1/events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...apiKeyHeaders(),
+      },
+      body: JSON.stringify({
+        eventName: 'button_click',
+        properties: {
+          screenName: 'JobDetailsScreen',
+          buttonId: 'apply_now',
+          platform: 'ios',
+          timestamp: '2026-06-04T21:51:30.000Z',
+          sessionId: '83af1260-a536-4749-a7ed-5da92e6d3510',
+        },
+      }),
+    })
+
+    expect(res.status).toBe(202)
+    expect(inserted).toBeDefined()
+    expect(inserted!.eventName).toBe('button_click')
+    expect(inserted!.screenName).toBe('JobDetailsScreen')
+    expect(inserted!.platform).toBe('ios')
+    expect(inserted!.sessionId).toBe('83af1260-a536-4749-a7ed-5da92e6d3510')
+    expect(inserted!.properties).toEqual({ buttonId: 'apply_now' })
+  })
+
+  it('POST /v1/events returns 500 when insert fails', async () => {
+    const failingApp = createApp(testEnv, noopLogger, {
+      events: {
+        insertEvent: async () => {
+          throw new Error('database unavailable')
+        },
+      },
+    })
+
+    const res = await failingApp.request('/v1/events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...apiKeyHeaders(),
+      },
+      body: JSON.stringify({ eventName: 'screen_view' }),
+    })
+
+    expect(res.status).toBe(500)
+    const body = await res.json()
+    expect(body).toMatchObject({
+      ok: false,
+      error: { code: 'INTERNAL_ERROR' },
     })
   })
 
