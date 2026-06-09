@@ -39,6 +39,33 @@ function topLevelEventProperties(
   )
 }
 
+function parseEventProperties(
+  body: Record<string, unknown>,
+  fromTopLevel: Record<string, unknown>,
+):
+  | { ok: true; properties?: Record<string, unknown> }
+  | { ok: false; message: string; fields: Record<string, string> } {
+  if (body.properties !== undefined) {
+    if (!isRecord(body.properties)) {
+      return {
+        ok: false,
+        message: 'properties must be a JSON object when provided',
+        fields: { properties: 'invalid' },
+      }
+    }
+    return {
+      ok: true,
+      properties: { ...fromTopLevel, ...body.properties },
+    }
+  }
+
+  if (Object.keys(fromTopLevel).length > 0) {
+    return { ok: true, properties: fromTopLevel }
+  }
+
+  return { ok: true }
+}
+
 export function parseEventsBody(
   raw: unknown,
 ):
@@ -67,26 +94,13 @@ export function parseEventsBody(
   }
 
   const fromTopLevel = topLevelEventProperties(body)
-
-  let properties: Record<string, unknown> | undefined
-  if (body.properties !== undefined) {
-    if (!isRecord(body.properties)) {
-      return {
-        ok: false,
-        message: 'properties must be a JSON object when provided',
-        fields: { properties: 'invalid' },
-      }
-    }
-    properties = {
-      ...fromTopLevel,
-      ...body.properties,
-    }
-  } else if (Object.keys(fromTopLevel).length > 0) {
-    properties = fromTopLevel
+  const propertiesResult = parseEventProperties(body, fromTopLevel)
+  if (!propertiesResult.ok) {
+    return propertiesResult
   }
 
   return {
     ok: true,
-    value: { eventName: eventName.trim(), properties },
+    value: { eventName: eventName.trim(), properties: propertiesResult.properties },
   }
 }
