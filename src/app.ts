@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import type { AppEnv } from './config/env.js'
+import type { ErrorsRepository } from './db/errorsRepository.js'
 import type { EventsRepository } from './db/eventsRepository.js'
 import type { Logger } from './lib/logger.js'
 import { requestLogMiddleware } from './middleware/requestLog.js'
@@ -9,6 +10,7 @@ import { createEventsRoute } from './routes/v1/events.js'
 
 export type AppDeps = {
   events: EventsRepository
+  errors: ErrorsRepository
 }
 
 export function createApp(env: AppEnv, log: Logger, deps: AppDeps): Hono {
@@ -27,7 +29,14 @@ export function createApp(env: AppEnv, log: Logger, deps: AppDeps): Hono {
       log,
     }),
   )
-  v1.route('/errors', createErrorsRoute(env.apiKey))
+  v1.route(
+    '/errors',
+    createErrorsRoute({
+      apiKey: env.apiKey,
+      insertError: deps.errors.insertError,
+      log,
+    }),
+  )
   app.route('/v1', v1)
 
   app.onError((err, c) => {

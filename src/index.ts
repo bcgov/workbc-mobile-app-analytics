@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server'
 import { createApp } from './app.js'
 import { loadEnv } from './config/env.js'
+import { createErrorsRepository } from './db/errorsRepository.js'
 import { createEventsRepository } from './db/eventsRepository.js'
 import { createPool } from './db/pool.js'
 import { createLogger } from './lib/logger.js'
@@ -16,7 +17,10 @@ pool.on('error', (err) => {
   })
 })
 
-const app = createApp(env, log, { events: createEventsRepository(pool) })
+const app = createApp(env, log, {
+  events: createEventsRepository(pool),
+  errors: createErrorsRepository(pool),
+})
 
 function shutdown(): void {
   void pool.end()
