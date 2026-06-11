@@ -3,6 +3,7 @@ import { createApp } from './app.js'
 import { loadEnv } from './config/env.js'
 import { createErrorsRepository } from './db/errorsRepository.js'
 import { createEventsRepository } from './db/eventsRepository.js'
+import { createSummaryRepository } from './db/summaryRepository.js'
 import { createPool } from './db/pool.js'
 import { createLogger } from './lib/logger.js'
 
@@ -20,6 +21,7 @@ pool.on('error', (err) => {
 const app = createApp(env, log, {
   events: createEventsRepository(pool),
   errors: createErrorsRepository(pool),
+  summary: createSummaryRepository(pool),
 })
 
 function shutdown(): void {
