@@ -13,6 +13,8 @@ const testEnv: AppEnv = {
   logLevel: 'error',
   apiKey: testApiKey,
   databaseUrl: 'postgresql://localhost:5432/test',
+  summaryUsername: 'summary-user',
+  summaryPassword: 'summary-pass',
 }
 
 function apiKeyHeaders(): Record<string, string> {
@@ -29,6 +31,17 @@ const noopLogger: Logger = {
 const noopDeps = {
   events: { insertEvent: async () => {} },
   errors: { insertError: async () => {} },
+  summary: {
+    getSummaryMetrics: async () => ({
+      uniqueVisitorsToday: 0,
+      uniqueVisitorsLast7Days: 0,
+      uniqueVisitorsLast30Days: 0,
+      authenticatedEvents: 0,
+      notAuthenticatedEvents: 0,
+      totalErrors: 0,
+      topPages: [],
+    }),
+  },
 }
 
 describe('createApp', () => {
@@ -88,6 +101,7 @@ describe('createApp', () => {
         },
       },
       errors: { insertError: async () => {} },
+      summary: noopDeps.summary,
     })
 
     const res = await capturingApp.request('/v1/events', {
@@ -127,6 +141,7 @@ describe('createApp', () => {
         },
       },
       errors: { insertError: async () => {} },
+      summary: noopDeps.summary,
     })
 
     const res = await capturingApp.request('/v1/events', {
@@ -164,6 +179,7 @@ describe('createApp', () => {
         },
       },
       errors: { insertError: async () => {} },
+      summary: noopDeps.summary,
     })
 
     const res = await failingApp.request('/v1/events', {
@@ -275,6 +291,7 @@ describe('createApp', () => {
           inserted = row
         },
       },
+      summary: noopDeps.summary,
     })
 
     const res = await capturingApp.request('/v1/errors', {
@@ -313,6 +330,7 @@ describe('createApp', () => {
           throw new Error('database unavailable')
         },
       },
+      summary: noopDeps.summary,
     })
 
     const res = await failingApp.request('/v1/errors', {

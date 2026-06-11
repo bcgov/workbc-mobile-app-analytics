@@ -2,15 +2,18 @@ import { Hono } from 'hono'
 import type { AppEnv } from './config/env.js'
 import type { ErrorsRepository } from './db/errorsRepository.js'
 import type { EventsRepository } from './db/eventsRepository.js'
+import type { SummaryRepository } from './db/summaryRepository.js'
 import type { Logger } from './lib/logger.js'
 import { requestLogMiddleware } from './middleware/requestLog.js'
 import { healthRoute } from './routes/health.js'
 import { createErrorsRoute } from './routes/v1/errors.js'
 import { createEventsRoute } from './routes/v1/events.js'
+import { createSummaryRoute } from './routes/v1/summary.js'
 
 export type AppDeps = {
   events: EventsRepository
   errors: ErrorsRepository
+  summary: SummaryRepository
 }
 
 export function createApp(env: AppEnv, log: Logger, deps: AppDeps): Hono {
@@ -34,6 +37,15 @@ export function createApp(env: AppEnv, log: Logger, deps: AppDeps): Hono {
     createErrorsRoute({
       apiKey: env.apiKey,
       insertError: deps.errors.insertError,
+      log,
+    }),
+  )
+  v1.route(
+    '/summary',
+    createSummaryRoute({
+      summaryUsername: env.summaryUsername,
+      summaryPassword: env.summaryPassword,
+      getSummaryMetrics: deps.summary.getSummaryMetrics,
       log,
     }),
   )
