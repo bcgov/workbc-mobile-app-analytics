@@ -3,6 +3,10 @@ import { VANCOUVER_TIME_ZONE } from '../lib/vancouverDayBounds.js'
 import { escapeHtml } from './html.js'
 import { summaryPageStyles } from './styles.js'
 
+const faviconHref = 'https://www2.gov.bc.ca/favicon.ico'
+const headerLogoHref =
+  'https://www2.gov.bc.ca/images/BCID_H_rgb_pos.png'
+
 function formatNumber(value: number): string {
   return value.toLocaleString('en-CA')
 }
@@ -31,7 +35,8 @@ function renderTopPages(topPages: SummaryMetrics['topPages']): string {
     .map(
       (page, index) => `
         <li class="top-page-item">
-          <span class="top-page-name">${index + 1}. ${escapeHtml(page.screenName)}</span>
+          <span class="top-page-rank" aria-hidden="true">${index + 1}</span>
+          <span class="top-page-name">${escapeHtml(page.screenName)}</span>
           <span class="top-page-views">${formatNumber(page.views)} views</span>
         </li>`,
     )
@@ -62,17 +67,38 @@ export function renderSummaryPage(
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>WorkBC Analytics Summary</title>
+    <link rel="icon" href="${faviconHref}" type="image/x-icon" />
     <style>${summaryPageStyles}</style>
   </head>
   <body>
-    <main>
-      <header>
-        <h1>WorkBC Analytics Summary</h1>
-        <p class="meta">Generated ${escapeHtml(formatGeneratedAt(generatedAt))}</p>
-      </header>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
-      <section>
-        <h2>Unique Visitors</h2>
+    <header class="site-header">
+      <div class="site-header-inner">
+        <img
+          class="site-header-logo"
+          src="${headerLogoHref}"
+          alt="Government of British Columbia"
+          width="190"
+          height="60"
+        />
+        <div class="site-header-brand">
+          <span class="site-header-title">WorkBC</span>
+          <span class="site-header-subtitle">Mobile App Analytics</span>
+        </div>
+      </div>
+      <div class="site-header-accent" aria-hidden="true"></div>
+    </header>
+
+    <main id="main-content" class="page-content">
+      <div class="page-header">
+        <h1>Analytics Summary</h1>
+        <p class="meta">Generated ${escapeHtml(formatGeneratedAt(generatedAt))}</p>
+      </div>
+
+      <section aria-labelledby="visitors-heading">
+        <h2 id="visitors-heading">Unique Visitors</h2>
+        <p class="section-intro">Distinct users by Pacific Time day boundaries.</p>
         <div class="cards">
           <article class="card">
             <div class="card-label">Today</div>
@@ -89,36 +115,63 @@ export function renderSummaryPage(
         </div>
       </section>
 
-      <section>
-        <h2>Authentication (All Time)</h2>
-        <div class="auth-bar">
+      <section aria-labelledby="auth-heading">
+        <h2 id="auth-heading">Authentication</h2>
+        <p class="section-intro">All-time event breakdown by login status.</p>
+        <div class="auth-panel">
           <div
-            class="auth-bar-authenticated"
-            style="width: ${authenticatedBarWidth}%"
-          ></div>
-          <div class="auth-bar-not-authenticated"></div>
-        </div>
-        <div class="auth-stats">
-          <span>${authenticatedPercent} logged in (${formatNumber(metrics.authenticatedEvents)} events)</span>
-          <span>${notAuthenticatedPercent} not logged in (${formatNumber(metrics.notAuthenticatedEvents)} events)</span>
+            class="auth-bar"
+            role="img"
+            aria-label="${authenticatedPercent} logged in, ${notAuthenticatedPercent} not logged in"
+          >
+            <div
+              class="auth-bar-authenticated"
+              style="width: ${authenticatedBarWidth}%"
+            ></div>
+            <div class="auth-bar-not-authenticated"></div>
+          </div>
+          <ul class="auth-legend">
+            <li class="auth-legend-item">
+              <span
+                class="auth-legend-swatch auth-legend-swatch-authenticated"
+                aria-hidden="true"
+              ></span>
+              <span>${authenticatedPercent} logged in (${formatNumber(metrics.authenticatedEvents)} events)</span>
+            </li>
+            <li class="auth-legend-item">
+              <span
+                class="auth-legend-swatch auth-legend-swatch-not-authenticated"
+                aria-hidden="true"
+              ></span>
+              <span>${notAuthenticatedPercent} not logged in (${formatNumber(metrics.notAuthenticatedEvents)} events)</span>
+            </li>
+          </ul>
         </div>
       </section>
 
-      <section>
-        <h2>Errors (All Time)</h2>
+      <section aria-labelledby="errors-heading">
+        <h2 id="errors-heading">Errors</h2>
+        <p class="section-intro">All-time error events reported by the mobile app.</p>
         <div class="cards">
-          <article class="card">
+          <article class="card card-danger">
             <div class="card-label">Total Errors</div>
             <div class="card-value">${formatNumber(metrics.totalErrors)}</div>
           </article>
         </div>
       </section>
 
-      <section>
-        <h2>Top Pages (All Time)</h2>
+      <section aria-labelledby="pages-heading">
+        <h2 id="pages-heading">Top Pages</h2>
+        <p class="section-intro">Most viewed screens across all time.</p>
         ${renderTopPages(metrics.topPages)}
       </section>
     </main>
+
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        &copy; ${generatedAt.getFullYear()} Government of British Columbia
+      </div>
+    </footer>
   </body>
 </html>`
 }
