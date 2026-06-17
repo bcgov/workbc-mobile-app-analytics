@@ -61,12 +61,6 @@ export function createErrorsRoute(deps: ErrorsRouteDeps) {
     return c.json(body, 202)
   })
 
-  errorsRoute.post('/pinning', async (c) => {
-    const parsedJson = c.get('parsedJson')
-    console.log('Pinning error received: ', parsedJson)
-    return c.json({ success: true })
-  })
-
   return errorsRoute
 }
 

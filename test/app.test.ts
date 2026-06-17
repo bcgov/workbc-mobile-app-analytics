@@ -220,28 +220,6 @@ describe('createApp', () => {
     })
   })
 
-  it('POST /v1/errors/pinning returns 401 without API key', async () => {
-    const res = await app.request('/v1/errors/pinning', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ host: 'api.example.com', reason: 'pin mismatch' }),
-    })
-    expect(res.status).toBe(401)
-  })
-
-  it('POST /v1/errors/pinning accepts JSON body', async () => {
-    const res = await app.request('/v1/errors/pinning', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...apiKeyHeaders(),
-      },
-      body: JSON.stringify({ host: 'api.example.com', reason: 'pin mismatch' }),
-    })
-    expect(res.status).toBe(200)
-    await expect(res.json()).resolves.toEqual({ success: true })
-  })
-
   it('POST /v1/errors returns 401 without API key', async () => {
     const res = await app.request('/v1/errors', {
       method: 'POST',
