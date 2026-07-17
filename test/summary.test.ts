@@ -33,8 +33,8 @@ const sampleMetrics: SummaryMetrics = {
   notAuthenticatedEvents: 380,
   totalErrors: 42,
   topPages: [
-    { screenName: 'HomeScreen', views: 1500 },
-    { screenName: 'JobDetailsScreen', views: 980 },
+    { screenName: 'LandingScreen', views: 1500 },
+    { screenName: 'LookupScreen/Lookup', views: 980 },
     { screenName: '<script>alert(1)</script>', views: 10 },
   ],
 }
@@ -99,8 +99,10 @@ describe('GET /v1/summary', () => {
     expect(html).toContain('62% logged in')
     expect(html).toContain('38% not logged in')
     expect(html).toContain('42')
-    expect(html).toContain('HomeScreen')
-    expect(html).toContain('JobDetailsScreen')
+    expect(html).toContain('Get Started')
+    expect(html).toContain('Account Lookup')
+    expect(html).toContain('title="LandingScreen"')
+    expect(html).toContain('title="LookupScreen/Lookup"')
   })
 
   it('escapes unsafe screen names in HTML output', async () => {
