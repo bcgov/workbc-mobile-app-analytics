@@ -1,4 +1,5 @@
 import type { SummaryMetrics } from '../db/summaryRepository.js'
+import { formatScreenName } from '../lib/screenLabels.js'
 import { VANCOUVER_TIME_ZONE } from '../lib/vancouverDayBounds.js'
 import { escapeHtml } from './html.js'
 import { summaryPageStyles } from './styles.js'
@@ -32,14 +33,15 @@ function renderTopPages(topPages: SummaryMetrics['topPages']): string {
   }
 
   return `<ol class="top-pages">${topPages
-    .map(
-      (page, index) => `
+    .map((page, index) => {
+      const label = formatScreenName(page.screenName)
+      return `
         <li class="top-page-item">
           <span class="top-page-rank" aria-hidden="true">${index + 1}</span>
-          <span class="top-page-name">${escapeHtml(page.screenName)}</span>
+          <span class="top-page-name" title="${escapeHtml(page.screenName)}">${escapeHtml(label)}</span>
           <span class="top-page-views">${formatNumber(page.views)} views</span>
-        </li>`,
-    )
+        </li>`
+    })
     .join('')}</ol>`
 }
 
